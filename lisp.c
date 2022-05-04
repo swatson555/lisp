@@ -409,16 +409,16 @@ void parameterize(Text* args, Text* para, Env* env) {
 void* apply(void* func, Text* args, Env* env) {
   if (islist(func)) {
     Pair* pair = func;
-    Env* lambdaenv = pair->car;
+    Env* closure = pair->car;
     Pair* lambda = pair->cdr;
     Text* para = lambda->car;
     Text* body = lambda->cdr;
-    Env* closure = extend(lambdaenv);
+    Env* lambdaenv = extend(closure);
     if (para) {
       Text* evargs = evalargs(args, env);
-      parameterize(evargs, para, closure);
+      parameterize(evargs, para, lambdaenv);
     }
-    return evalbody(body, closure);
+    return evalbody(body, lambdaenv);
   }
   else {
     char evret[32];
