@@ -342,6 +342,26 @@ void set(void* sym, void* val, Env* env) {
   return set(sym, val, env->next);
 }
 
+void parameterize(Text* args, Text* para, Env* env) {
+  assert(env);
+  assert(env->entryptr >= (Entry*)&env->entry && env->entryptr < (Entry*)&env->entry[32]);
+  strcpy(env->entryptr->sym, para->car);
+  if (args->car < (char*)100)
+    env->entryptr->val = args->car;
+  else
+    if (istext(args->car) || islist(args->car)) {
+      if (isenv(args->car))
+        env->entryptr->val = args;
+      else
+        env->entryptr->val = args->car;
+    }
+    else
+      env->entryptr->val = cpysym(args->car);
+  env->entryptr++;
+  if (args->cdr != NULL)
+    parameterize(args->cdr, para->cdr, env);
+}
+
 
 void* eval(void* exp);
 void* eval_exp(void* exp, Env* env);
@@ -398,12 +418,6 @@ void* evalbody(Text* body, Env* env) {
     return evalbody(body->cdr, env);
   else
     return val;
-}
-
-void parameterize(Text* args, Text* para, Env* env) {
-  put(para->car, args->car, env);
-  if (args->cdr != NULL)
-    parameterize(args->cdr, para->cdr, env);
 }
 
 void* apply(void* func, Text* args, Env* env) {
