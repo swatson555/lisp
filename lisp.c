@@ -331,7 +331,10 @@ void set(void* sym, void* val, Env* env) {
   Entry* seek = env->entryptr;
   for (;seek != env->entry-1; --seek)
     if (strcmp(seek->sym, sym) == 0) {
-      if (istext(val) || islist(val)) {
+      if (val < (void*)100) {
+        seek->val = val;
+      }
+      else if (istext(val) || islist(val)) {
         Pair* pair = val;
         if (isenv(pair->car))
           seek->val = cpylambda(val);
