@@ -301,7 +301,10 @@ void put(void* sym, void* val, Env* env) {
   assert(env);
   assert(env->entryptr >= (Entry*)&env->entry && env->entryptr < (Entry*)&env->entry[32]);
   strcpy(env->entryptr->sym, sym);
-  if (istext(val) || islist(val)) {
+  if (val < (void*)100) {
+    env->entryptr->val = val;
+  }
+  else if (istext(val) || islist(val)) {
     Pair* pair = val;
     if (isenv(pair->car))
       env->entryptr->val = cpylambda(val);
@@ -346,17 +349,17 @@ void parameterize(Text* args, Text* para, Env* env) {
   assert(env);
   assert(env->entryptr >= (Entry*)&env->entry && env->entryptr < (Entry*)&env->entry[32]);
   strcpy(env->entryptr->sym, para->car);
-  if (args->car < (char*)100)
+  if (args->car < (char*)100) {
     env->entryptr->val = args->car;
-  else
-    if (istext(args->car) || islist(args->car)) {
-      if (isenv(args->car))
-        env->entryptr->val = args;
-      else
-        env->entryptr->val = args->car;
-    }
+  }
+  else if (istext(args->car) || islist(args->car)) {
+    if (isenv(args->car))
+      env->entryptr->val = args;
     else
-      env->entryptr->val = cpysym(args->car);
+      env->entryptr->val = args->car;
+  }
+  else
+    env->entryptr->val = cpysym(args->car);
   env->entryptr++;
   if (args->cdr != NULL)
     parameterize(args->cdr, para->cdr, env);
