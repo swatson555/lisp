@@ -425,25 +425,25 @@ void* apply(void* func, Text* args, Env* env) {
     if (func == (void*)1) {
       int left = atoi(eval_exp(args->car, env));
       int right = atoi(eval_exp(args->cdr->car, env));
-      sprintf(evret, "%d", left+right);
+      snprintf(evret, 32, "%d", left+right);
       return cpysym(evret);
     }
     else if (func == (void*)2) {
       int left = atoi(eval_exp(args->car, env));
       int right = atoi(eval_exp(args->cdr->car, env));
-      sprintf(evret, "%d", left-right);
+      snprintf(evret, 32, "%d", left-right);
       return cpysym(evret);
     }
     else if (func == (void*)3) {
       int left = atoi(eval_exp(args->car, env));
       int right = atoi(eval_exp(args->cdr->car, env));
-      sprintf(evret, "%d", left*right);
+      snprintf(evret, 32, "%d", left*right);
       return cpysym(evret);
     }
     else if (func == (void*)4) {
       int left = atoi(eval_exp(args->car, env));
       int right = atoi(eval_exp(args->cdr->car, env));
-      sprintf(evret, "%d", left/right);
+      snprintf(evret, 32, "%d", left/right);
       return cpysym(evret);
     }
     else if (func == (void*)5) {
