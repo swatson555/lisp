@@ -147,6 +147,7 @@ void* read_list() {
 
 int islist(void* x);
 int isenv(void* x);
+char* globalsym(void* exp);
 
 void print(void* exp);
 void print_exp(void* exp);
@@ -175,7 +176,10 @@ void print_exp(void* exp) {
     }
   }
   else
-    printf("%s", exp ? (char*)exp : "()");
+    if (exp < (void*)100)
+      printf("#<procedure %s>", globalsym(exp));
+    else
+      printf("%s", exp ? (char*)exp : "()");
 }
 
 void print_list(Pair* list) {
@@ -295,6 +299,13 @@ int isenv(void* x) {
   return x >= (void*)&frame &&
          x <  (void*)&frame[128] ||
          x == (void*)&global;
+}
+
+char* globalsym(void* exp) {
+  Entry* seek = global.entry;
+  for (;; ++seek)
+    if (seek->val == exp)
+      return seek->sym;
 }
 
 void put(void* sym, void* val, Env* env) {
