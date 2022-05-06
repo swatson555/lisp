@@ -405,13 +405,13 @@ void* eval_exp(void* exp, Env* env) {
       void* var = text->cdr->car;
       void* val = eval_exp(text->cdr->cdr->car, env);
       put(var, val, env);
-      return NULL;
+      return var;
     }
     if (strcmp(text->car, "set!") == 0) {
       void* var = text->cdr->car;
       void* val = eval_exp(text->cdr->cdr->car, env);
       set(var, val, env);
-      return NULL;
+      return var;
     }
     else if (strcmp(text->car, "quote") == 0) {
       return text->cdr->car;
