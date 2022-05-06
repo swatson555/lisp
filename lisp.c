@@ -510,6 +510,24 @@ void* apply(void* func, Text* args, Env* env) {
     else if (func == (void*)9) {
       return evalargs(args, env);
     }
+    else if (func == (void*)10) {
+      Pair* pair = eval_exp(args->car, env);
+      void* val = eval_exp(args->cdr->car, env);
+      if (istext(val) || islist(val))
+        pair->car = val;
+      else
+        pair->car = val ? cpysym(val) : NULL;
+      return pair;
+    }
+    else if (func == (void*)11) {
+      Pair* pair = eval_exp(args->car, env);
+      void* val = eval_exp(args->cdr->car, env);
+      if (istext(val) || islist(val))
+        pair->cdr = val;
+      else
+        pair->cdr = val ? cpysym(val) : NULL;
+      return pair;
+    }
   }
   assert(1);
   return 0;
