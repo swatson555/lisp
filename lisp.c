@@ -529,8 +529,7 @@ void* apply(void* func, Text* args, Env* env) {
       return pair;
     }
   }
-  assert(1);
-  return 0;
+  assert(0);
 }
 
 
