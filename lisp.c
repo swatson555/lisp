@@ -4,12 +4,12 @@
 #include <ctype.h>
 #include <assert.h>
 
-char token[128][32];
+int ii = 0; // input index
+int ti = 0; // token index
+
+char token[256][32];
 
 int lexer(char* input) {
-  int ii = 0; // input index
-  int ti = 0; // token index
-
   while(input[ii] != '\0')
     switch(input[ii]) {
     // Ignore whitespace and newlines
@@ -99,12 +99,27 @@ Pair* tcons(void* x, void* y) {
   return textptr++;
 }
 
+void* read_file(char* buffer);
 void* read(char* ln);
 void* read_exp();
 void* read_list();
 
+void* read_file(char* buffer) {
+  // Initialize the lexer and list memory...
+  // if nothing has been lexed.
+  if (ti == 0) {
+    curtok = 0;
+    textptr = text;
+    lexer(buffer);
+  }
+  return read_exp();
+}
+
 void* read(char* ln) {
   // Initialize the lexer and list memory.
+  ii = 0; // input index
+  ti = 0; // token index
+
   curtok = 0;
   textptr = text;
 
@@ -534,13 +549,32 @@ void* apply(void* func, Text* args, Env* env) {
 
 
 int main(int argc, char** argv) {
-  printf("Lisp REPL\n\n");
-  printf(">> ");
-
-  char buffer[256];
-  while (fgets(buffer, 256, stdin)) {
-    print(eval(read(buffer)));
+  if (argc > 1) {
+    FILE* file = fopen(argv[1], "rb");
+    if (!file) {
+      fprintf(stderr, "Can't open file: %s\n", argv[1]);
+      return -1;
+    }
+    // Read the entire file into buffer.
+    fseek(file, 0, SEEK_END);
+    char* buffer = malloc(ftell(file));
+    fseek(file, 0, SEEK_SET);
+    for (int c, i = 0; (c=fgetc(file)) != EOF; i++)
+      buffer[i] = c;
+    // Evaluate until there are no more tokens.
+    do {
+      print(eval(read_file(buffer)));
+    } while (ti > curtok);
+  }
+  else {
+    printf("Lisp REPL\n\n");
     printf(">> ");
+
+    char buffer[256];
+    while (fgets(buffer, 256, stdin)) {
+      print(eval(read(buffer)));
+      printf(">> ");
+    }
   }
   return 0;
 }
