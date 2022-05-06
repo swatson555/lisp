@@ -255,7 +255,7 @@ void* lambda(Text* args, Text* body, void* env) {
 }
 
 typedef struct {
-  char sym[32];
+  char *sym;
   void* val;
 } Entry;
 
@@ -274,8 +274,10 @@ Env global = {
    { .sym = "cdr", .val=(void*)6 },
    { .sym = "=", .val=(void*)7 },
    { .sym = "cons", .val=(void*)8 },
-   { .sym = "list", .val=(void*)9 },},
-  .entryptr = global.entry+9,
+   { .sym = "list", .val=(void*)9 },
+   { .sym = "set-car!", .val=(void*)10 },
+   { .sym = "set-cdr!", .val=(void*)11 },},
+  .entryptr = global.entry+11,
   NULL
 };
 
@@ -311,7 +313,7 @@ char* globalsym(void* exp) {
 void put(void* sym, void* val, Env* env) {
   assert(env);
   assert(env->entryptr >= (Entry*)&env->entry && env->entryptr < (Entry*)&env->entry[32]);
-  strcpy(env->entryptr->sym, sym);
+  env->entryptr->sym = cpysym(sym);
   if (val < (void*)100) {
     env->entryptr->val = val;
   }
@@ -329,7 +331,7 @@ void put(void* sym, void* val, Env* env) {
 
 void* get(void* sym, Env* env) {
   assert(env);
-  Entry* seek = env->entryptr;
+  Entry* seek = env->entryptr-1;
   for (;seek != env->entry-1; --seek)
     if (strcmp(seek->sym, sym) == 0)
         return seek->val;
@@ -356,13 +358,21 @@ void set(void* sym, void* val, Env* env) {
         seek->val = cpysym(val);
       return;
     }
-  return set(sym, val, env->next);
+  set(sym, val, env->next);
 }
 
 void parameterize(Text* args, Text* para, Env* env) {
   assert(env);
   assert(env->entryptr >= (Entry*)&env->entry && env->entryptr < (Entry*)&env->entry[32]);
-  strcpy(env->entryptr->sym, para->car);
+  if (istext(para) || islist(para)) {
+    env->entryptr->sym = cpysym(para->car);
+  }
+  else {
+    env->entryptr->sym = cpysym(para);
+    env->entryptr->val = args;
+    env->entryptr++;
+    return;
+  }
   if (args->car < (char*)100) {
     env->entryptr->val = args->car;
   }
