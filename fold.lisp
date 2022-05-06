@@ -14,6 +14,8 @@
 (fold-right + 0 '(0 1 2 3))
 (fold-right + 0 '(0 1 2 3 4 5))
 
+;; Scheme style + procedure
+
 (define builtin-+ +)
 (define +
   (lambda xs

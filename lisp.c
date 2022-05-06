@@ -18,6 +18,11 @@ int lexer(char* input) {
       ++ii;
       break;
 
+    // Ignore comment lines until newline
+    case ';':
+      while (input[ii++] != '\n');
+      break;
+
     // Turn a left parenthesis into a token.
     case '(':
       token[ti][0] = '(';
