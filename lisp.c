@@ -167,6 +167,7 @@ void* read_list() {
 
 int islist(void* x);
 int isenv(void* x);
+int islambda(void* x);
 char* globalsym(void* exp);
 
 void print(void* exp);
@@ -274,6 +275,16 @@ void* lambda(Text* args, Text* body, void* env) {
   return cons(env, cons(args, body));
 }
 
+int islambda(void* x) {
+  if (istext(x) || islist(x)) {
+    Pair* pair = x;
+    if (isenv(pair->car))
+      return 1;
+  }
+  return 0;
+}
+
+
 typedef struct {
   char *sym;
   void* val;
@@ -339,8 +350,10 @@ void put(void* sym, void* val, Env* env) {
   }
   else if (istext(val) || islist(val)) {
     Pair* pair = val;
-    if (isenv(pair->car))
+    if (islambda(val)) {
+      keep(pair->car);
       env->entryptr->val = cpylambda(val);
+    }
     else
       env->entryptr->val = cpy(val);
   }
