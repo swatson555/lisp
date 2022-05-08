@@ -311,20 +311,36 @@ Env frame[128] = {
    .entryptr = frame[0].entry+11,
    NULL},
 };
-Env frame[128];
-Env* frameptr = frame;
+unsigned char frameref[128] = {0};
 
 Env* extend(Env* env) {
-  assert(isenv(frameptr));
-  frameptr->next = env;
-  frameptr->entryptr = frameptr->entry;
-  return frameptr++;
+  for (int i = 1; i < 128; i++)
+    if (frameref[i] == 0) {
+      // printf(".%d ", i);
+      frame[i].next = env;
+      frame[i].entryptr = frame[i].entry;
+      memset(frame[i].entry, 0, sizeof(Entry[32]));
+      frameref[i]++;
+      return &frame[i];
+    }
+  assert(0);
 }
 
-void retract() {
-  assert(isenv(frameptr));
-  frameptr--;
-  memset(frameptr->entry, 0, sizeof(Entry[32]));
+void retract(Env* env) {
+  frameref[((long)env - (long)frame) / sizeof(Env)]--;
+}
+
+void keep(Env* env) {
+  frameref[((long)env - (long)frame) / sizeof(Env)]++;
+
+  Entry* seek = env->entryptr-1;
+  for (;seek != env->entry-1; --seek)
+    if (islambda(seek->val)) {
+      Pair* pair = seek->val;
+      Env* closure = pair->car;
+      if (!frameref[((long)closure - (long)frame) / sizeof(Env)])
+        keep(closure);
+    }
 }
 
 int isenv(void* x) {
@@ -490,7 +506,9 @@ void* apply(void* func, Text* args, Env* env) {
       Text* evargs = evalargs(args, env);
       parameterize(evargs, para, lambdaenv);
     }
-    return evalbody(body, lambdaenv);
+    void* val = evalbody(body, lambdaenv);
+    retract(lambdaenv);
+    return val;
   }
   else {
     char evret[32];
