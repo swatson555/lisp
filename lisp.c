@@ -296,22 +296,21 @@ typedef struct Env {
   struct Env* next;
 } Env;
 
-Env global = {
-  {{ .sym = "+", .val=(void*)1 },
-   { .sym = "-", .val=(void*)2 },
-   { .sym = "*", .val=(void*)3 },
-   { .sym = "/", .val=(void*)4 },
-   { .sym = "car", .val=(void*)5 },
-   { .sym = "cdr", .val=(void*)6 },
-   { .sym = "=", .val=(void*)7 },
-   { .sym = "cons", .val=(void*)8 },
-   { .sym = "list", .val=(void*)9 },
-   { .sym = "set-car!", .val=(void*)10 },
-   { .sym = "set-cdr!", .val=(void*)11 },},
-  .entryptr = global.entry+11,
-  NULL
+Env frame[128] = {
+  {{{ .sym = "+", .val=(void*)1 },
+    { .sym = "-", .val=(void*)2 },
+    { .sym = "*", .val=(void*)3 },
+    { .sym = "/", .val=(void*)4 },
+    { .sym = "car", .val=(void*)5 },
+    { .sym = "cdr", .val=(void*)6 },
+    { .sym = "=", .val=(void*)7 },
+    { .sym = "cons", .val=(void*)8 },
+    { .sym = "list", .val=(void*)9 },
+    { .sym = "set-car!", .val=(void*)10 },
+    { .sym = "set-cdr!", .val=(void*)11 },},
+   .entryptr = frame[0].entry+11,
+   NULL},
 };
-
 Env frame[128];
 Env* frameptr = frame;
 
@@ -330,12 +329,11 @@ void retract() {
 
 int isenv(void* x) {
   return x >= (void*)&frame &&
-         x <  (void*)&frame[128] ||
-         x == (void*)&global;
+         x <  (void*)&frame[128];
 }
 
 char* globalsym(void* exp) {
-  Entry* seek = global.entry;
+  Entry* seek = frame[0].entry;
   for (;; ++seek)
     if (seek->val == exp)
       return seek->sym;
@@ -428,7 +426,7 @@ void* eval_exp(void* exp, Env* env);
 void* apply(void* func, Text* args, Env* env);
 
 void* eval(void* exp) {
-  return eval_exp(exp, &global);
+  return eval_exp(exp, frame);
 }
 
 void* eval_exp(void* exp, Env* env) {
