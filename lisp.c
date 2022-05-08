@@ -332,15 +332,6 @@ void retract(Env* env) {
 
 void keep(Env* env) {
   frameref[((long)env - (long)frame) / sizeof(Env)]++;
-
-  Entry* seek = env->entryptr-1;
-  for (;seek != env->entry-1; --seek)
-    if (islambda(seek->val)) {
-      Pair* pair = seek->val;
-      Env* closure = pair->car;
-      if (!frameref[((long)closure - (long)frame) / sizeof(Env)])
-        keep(closure);
-    }
 }
 
 int isenv(void* x) {
@@ -365,7 +356,6 @@ void put(void* sym, void* val, Env* env) {
   else if (istext(val) || islist(val)) {
     Pair* pair = val;
     if (islambda(val)) {
-      keep(pair->car);
       env->entryptr->val = cpylambda(val);
     }
     else
@@ -507,7 +497,8 @@ void* apply(void* func, Text* args, Env* env) {
       parameterize(evargs, para, lambdaenv);
     }
     void* val = evalbody(body, lambdaenv);
-    retract(lambdaenv);
+    if (!islambda(val))
+      retract(lambdaenv);
     return val;
   }
   else {
