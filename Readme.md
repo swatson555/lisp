@@ -9,3 +9,5 @@ An evaluator for Lisp. Implements a subset of Scheme.
 [Roll A Lisp In C - Evaluation](https://swatson555.github.io/posts/2022-05-06-make-a-lisp-2.html)
 
 [Roll A Lisp In C - Environments](https://swatson555.github.io/posts/2022-06-04-make-a-lisp-3.html)
+
+[Roll A Lisp In C - Procedures](https://swatson555.github.io/posts/2022-06-11-make-a-lisp-4.html)
