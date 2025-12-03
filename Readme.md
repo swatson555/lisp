@@ -8,15 +8,18 @@ This project is a minimalist implementation of a Lisp runtime, built to explore 
 It serves as the reference code for my blog series, *[Roll A Lisp In C](https://swatson555.github.io/posts/2020-01-18-make-a-lisp-1.html)*.
 
 ## Architecture
-The interpreter follows a recursive-descent architecture, transforming raw character streams into linked-list data structures before evaluation.
+The interpreter follows a recursive-descent architecture, transforming C character strings into linked-list data structures before evaluation.
 
 ```mermaid
-graph LR
-    A[Input Stream] -->|Lexer| B(Tokens)
-    B -->|Reader| C(S-Expressions)
-    C -->|Evaluator| D{Environment}
-    D -->|Result| E[Printer]
-    style D fill:#50C6D1,stroke:#0B1B1F,stroke-width:2px,color:#0B1B1F
+flowchart LR
+    A([Begin]) --> Reader
+    subgraph Reader
+        B[/Input String/] --> C(Lexical Analysis)
+        C -->|Tokens| D(Recursive Descent Parse)
+    end
+    Reader -->|S-Expresion| E(Evaluation)
+    E -->|Value| F[/Printer/]
+    F[/Printer/] --> Reader
 ```
 
 ## Usage
